@@ -1,6 +1,6 @@
 Name:           kmodtool
 Version:        1
-Release:        24%{?dist}
+Release:        25%{?dist}
 Summary:        Tool for building kmod packages
 License:        MIT
 URL:            http://rpmfusion.org/Packaging/KernelModules/Kmods2
@@ -38,6 +38,9 @@ sed -i 's|^default_prefix=.*|default_prefix=%{_datadir}/%{name}/|'  \
 
 
 %changelog
+* Wed Jul 26 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1-25
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
 * Thu Feb 16 2017 Hans de Goede <hdegoede@redhat.com> - 1-24
 - Modernize .spec a bit
 - Submit to Fedora for package review
