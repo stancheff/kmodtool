@@ -1,6 +1,6 @@
 Name:           kmodtool
 Version:        1
-Release:        26%{?dist}
+Release:        27%{?dist}
 Summary:        Tool for building kmod packages
 License:        MIT
 URL:            http://rpmfusion.org/Packaging/KernelModules/Kmods2
@@ -31,11 +31,6 @@ install -p -m 0644 %{SOURCE2} $RPM_BUILD_ROOT/%{_datadir}/%{name}/kernel-variant
 sed -i 's|^default_prefix=.*|default_prefix=%{_datadir}/%{name}/|'  \
  $RPM_BUILD_ROOT/%{_bindir}/kmodtool
 
-# RHEL/CentOS 6 ships only /sbin/depmod, but not /usr/sbin/depmod
-%if 0%{?rhel} == 6
-sed -i 's|%{_sbindir}/depmod|/sbin/depmod|g' $RPM_BUILD_ROOT%{_bindir}/kmodtool
-%endif
-
 
 %files
 %{_bindir}/*
@@ -43,6 +38,10 @@ sed -i 's|%{_sbindir}/depmod|/sbin/depmod|g' $RPM_BUILD_ROOT%{_bindir}/kmodtool
 
 
 %changelog
+* Mon Oct 09 2017 Robert Scheck <robert@fedoraproject.org> - 1-27
+- Revert my previous conditional fix for (/usr)/sbin/depmod
+  and apply the kmodtool patch by Nicolas Vieville (#1484293)
+
 * Tue Sep 19 2017 Robert Scheck <robert@fedoraproject.org> - 1-26
 - Add conditional fix for (/usr)/sbin/depmod for RHEL/CentOS 6
 
