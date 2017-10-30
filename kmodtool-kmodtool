@@ -141,7 +141,20 @@ print_rpmtemplate_per_kmodpkg ()
 		local redhatkernel=true
 	fi
 
+	## Build some interesting strings with kernel uname -r
+	## Examples:
+	## kernel_uname_r                3.10.0-693.2.2.el7.x86_64
+	## kernel_uname_r_wo_arch        3.10.0-693.2.2.el7
+	## kernel_uname_r_short          3.10.0-693.el7
+	## kernel_uname_r_rel            693
+	## kernel_uname_r_rel_plus_one   694
+	## kernel_uname_r_short_plus_one 3.10.0-694.el7
 	local kernel_uname_r=${1}
+	local kernel_uname_r_wo_arch=$(echo ${1} | sed -e "s/\.${target}//")
+	local kernel_uname_r_short=$(echo ${1} | sed -e "s/\.${target}//" -e "s/\(.*-\)\([[:alnum:]]*\)\(\..*\)\(\.el.*\)/\1\2\4/")
+	local kernel_uname_r_rel=$(echo ${1} | sed -e "s/.*-//" -e "s/\..*//")
+	local kernel_uname_r_rel_plus_one=$(( kernel_uname_r_rel+1 ))
+	local kernel_uname_r_short_plus_one=$(echo ${kernel_uname_r_short} | sed -e "s/(//" -e "s/-${kernel_uname_r_rel}\./-${kernel_uname_r_rel_plus_one}\./")
 	local kernel_variant="${2:+-${2}}"
 
 	if [[ -h /sbin ]] ; then
@@ -150,6 +163,19 @@ print_rpmtemplate_per_kmodpkg ()
 
     # first part
 	cat <<EOF
+
+%if 0%{?rhel}
+%package       -n kmod-${kmodname}
+Summary:          ${kmodname} kernel module(s) for ${kernel_uname_r_short}
+Group:            System/Kernel
+Provides:         kernel-modules = ${kernel_uname_r}
+Provides:         ${kmodname}-kmod = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires:         ${kmodname}-kmod-common >= %{?epoch:%{epoch}:}%{version}
+Requires(post):   %{?_prefix_usr}/sbin/weak-modules
+Requires(post):   %{?_prefix_usr}/sbin/depmod
+Requires(postun): %{?_prefix_usr}/sbin/weak-modules
+Requires(postun): %{?_prefix_usr}/sbin/depmod
+%else
 %package       -n kmod-${kmodname}-${kernel_uname_r}
 Summary:          ${kmodname} kernel module(s) for ${kernel_uname_r}
 Group:            System Environment/Kernel
@@ -158,6 +184,7 @@ Provides:         ${kmodname}-kmod = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires:         ${kmodname}-kmod-common >= %{?epoch:%{epoch}:}%{version}
 Requires(post):   %{?_prefix_usr}/sbin/depmod
 Requires(postun): %{?_prefix_usr}/sbin/depmod
+%endif
 EOF
 
 	if [[ ${obsolete_name} ]] ; then
@@ -170,26 +197,81 @@ EOF
 	if [[ ! "${customkernel}" ]] ; then
 		cat <<EOF
 
+%if 0%{?rhel}
+Requires:         kernel >= ${kernel_uname_r_short}
+Requires:         kernel < ${kernel_uname_r_short_plus_one}
+BuildRequires:    kernel-devel = ${kernel_uname_r_wo_arch} redhat-rpm-config kernel-abi-whitelists
+
+%post          -n kmod-${kmodname}
+%{?_prefix_usr}/sbin/depmod -aeF /boot/System.map-${kernel_uname_r} ${kernel_uname_r} > /dev/null || :
+
+modules=( \$(find ${usr_lib_modules}/${kernel_uname_r}/extra/${kmodname}/ | grep -e '\.ko$') )
+printf '%s\n' "\${modules[@]}" | %{?_prefix_usr}/sbin/weak-modules --add-modules
+
+%preun         -n kmod-${kmodname}
+rpm -ql kmod-${kmodname}-%{version}-%{release}.$(arch) | grep -e '\.ko$' > /var/run/rpm-kmod-${kmodname}-modules
+
+%postun        -n kmod-${kmodname}
+%{?_prefix_usr}/sbin/depmod -aeF /boot/System.map-${kernel_uname_r} ${kernel_uname_r} &> /dev/null || :
+
+modules=( \$(cat /var/run/rpm-kmod-${kmodname}-modules) )
+rm /var/run/rpm-kmod-${kmodname}-modules
+printf '%s\n' "\${modules[@]}" | %{?_prefix_usr}/sbin/weak-modules --remove-modules
+%else
 Requires:         kernel-uname-r = ${kernel_uname_r}
 BuildRequires:    kernel-devel-uname-r = ${kernel_uname_r}
 %post          -n kmod-${kmodname}-${kernel_uname_r}
 %{?_prefix_usr}/sbin/depmod -aeF /boot/System.map-${kernel_uname_r} ${kernel_uname_r} > /dev/null || :
 %postun        -n kmod-${kmodname}-${kernel_uname_r}
 %{?_prefix_usr}/sbin/depmod -aF /boot/System.map-${kernel_uname_r} ${kernel_uname_r} &> /dev/null || :
+%endif
 EOF
 	else
 		cat <<EOF
 
+%if 0%{?rhel}
+%post          -n kmod-${kmodname}
+[[ "\$(uname -r)" == "${kernel_uname_r}"  ]] && %{?_prefix_usr}/sbin/depmod -a > /dev/null || :
+
+if [[ "\$(uname -r)" == "${kernel_uname_r}"  ]] ; then
+  modules=( \$(find ${usr_lib_modules}/${kernel_uname_r}/extra/${kmodname}/ | grep -e '\.ko$') )
+  printf '%s\n' "\${modules[@]}" | %{?_prefix_usr}/sbin/weak-modules --add-modules
+fi
+
+%preun         -n kmod-${kmodname}
+if [[ "\$(uname -r)" == "${kernel_uname_r}"  ]] ; then
+  rpm -ql kmod-${kmodname}-%{version}-%{release}.$(arch) | grep -e '\.ko$' > /var/run/rpm-kmod-${kmodname}-modules
+fi
+
+%postun        -n kmod-${kmodname}
+[[ "\$(uname -r)" == "${kernel_uname_r}"  ]] && %{?_prefix_usr}/sbin/depmod -a > /dev/null || :
+
+if [[ "\$(uname -r)" == "${kernel_uname_r}"  ]] ; then
+  modules=( \$(cat /var/run/rpm-kmod-${kmodname}-modules) )
+  rm /var/run/rpm-kmod-${kmodname}-modules
+  printf '%s\n' "\${modules[@]}" | %{?_prefix_usr}/sbin/weak-modules --remove-modules
+fi
+%else
 %post          -n kmod-${kmodname}-${kernel_uname_r}
 [[ "\$(uname -r)" == "${kernel_uname_r}"  ]] && %{?_prefix_usr}/sbin/depmod -a > /dev/null || :
 %postun        -n kmod-${kmodname}-${kernel_uname_r}
 [[ "\$(uname -r)" == "${kernel_uname_r}"  ]] && %{?_prefix_usr}/sbin/depmod -a > /dev/null || :
+%endif
 EOF
 	fi
 
 	# third part
 	cat <<EOF
 
+%if 0%{?rhel}
+%description   -n kmod-${kmodname}
+This package provides the ${kmodname} kernel modules built for the Linux
+kernel ${kernel_uname_r_short} for the %{_target_cpu} family of processors.
+%files         -n kmod-${kmodname}
+%defattr(644,root,root,755)
+%dir ${usr_lib_modules}/${kernel_uname_r}/extra
+${usr_lib_modules}/${kernel_uname_r}/extra/${kmodname}/
+%else
 %description   -n kmod-${kmodname}-${kernel_uname_r}
 This package provides the ${kmodname} kernel modules built for the Linux
 kernel ${kernel_uname_r} for the %{_target_cpu} family of processors.
@@ -197,6 +279,7 @@ kernel ${kernel_uname_r} for the %{_target_cpu} family of processors.
 %defattr(644,root,root,755)
 %dir ${usr_lib_modules}/${kernel_uname_r}/extra
 ${usr_lib_modules}/${kernel_uname_r}/extra/${kmodname}/
+%endif
 EOF
 }
 
