@@ -54,6 +54,7 @@ print_rpmtemplate_header()
 	echo '%global kmodinstdir_prefix  '${usr_lib_modules}/
 	echo '%global kmodinstdir_postfix '/extra/${kmodname}/
 	echo '%global kernel_versions     '${kernel_versions}
+	echo '%global debug_package %{nil}'
 	echo
 }
 
