@@ -1,6 +1,6 @@
 Name:           kmodtool
 Version:        1
-Release:        27%{?dist}
+Release:        28%{?dist}
 Summary:        Tool for building kmod packages
 License:        MIT
 URL:            http://rpmfusion.org/Packaging/KernelModules/Kmods2
@@ -38,6 +38,9 @@ sed -i 's|^default_prefix=.*|default_prefix=%{_datadir}/%{name}/|'  \
 
 
 %changelog
+* Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1-28
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
+
 * Mon Oct 09 2017 Robert Scheck <robert@fedoraproject.org> - 1-27
 - Revert my previous conditional fix for (/usr)/sbin/depmod
   and apply the kmodtool patch by Nicolas Vieville (#1484293)
