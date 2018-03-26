@@ -72,7 +72,6 @@ ln -s \$(ls \$RPM_BUILD_ROOT/%{_usrsrc}/akmods/) \$RPM_BUILD_ROOT/%{_usrsrc}/akm
 
 %package       -n akmod-${kmodname}
 Summary:          Akmod package for ${kmodname} kernel module(s)
-Group:            System Environment/Kernel
 Requires:         kmodtool
 Requires:         akmods
 %{?AkmodsBuildRequires:Requires: %{AkmodsBuildRequires}}
@@ -106,7 +105,6 @@ print_akmodmeta ()
 
 %package       -n kmod-${kmodname}
 Summary:          Metapackage which tracks in ${kmodname} kernel module for newest kernel${dashvariant}
-Group:            System Environment/Kernel
 
 Provides:         ${kmodname}-kmod = %{?epoch:%{epoch}:}%{version}-%{release}
 Provides:         kmod-${kmodname}-xen = %{?epoch:%{epoch}:}%{version}-%{release}
@@ -168,7 +166,6 @@ print_rpmtemplate_per_kmodpkg ()
 %if 0%{?rhel}
 %package       -n kmod-${kmodname}
 Summary:          ${kmodname} kernel module(s) for ${kernel_uname_r_short}
-Group:            System/Kernel
 Provides:         kernel-modules = ${kernel_uname_r}
 Provides:         ${kmodname}-kmod = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires:         ${kmodname}-kmod-common >= %{?epoch:%{epoch}:}%{version}
@@ -179,7 +176,6 @@ Requires(postun): %{?_prefix_usr}/sbin/depmod
 %else
 %package       -n kmod-${kmodname}-${kernel_uname_r}
 Summary:          ${kmodname} kernel module(s) for ${kernel_uname_r}
-Group:            System Environment/Kernel
 Provides:         kernel-modules-for-kernel = ${kernel_uname_r}
 Provides:         ${kmodname}-kmod = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires:         ${kmodname}-kmod-common >= %{?epoch:%{epoch}:}%{version}
@@ -293,7 +289,6 @@ print_rpmtemplate_kmodmetapkg ()
 
 %package       -n kmod-${kmodname}${kernel_variant}
 Summary:          Metapackage which tracks in ${kmodname} kernel module for newest kernel${kernel_variant}
-Group:            System Environment/Kernel
 
 Provides:         ${kmodname}-kmod = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires:         kmod-${kmodname}-${kernel_uname_r} >= %{?epoch:%{epoch}:}%{version}-%{release}
