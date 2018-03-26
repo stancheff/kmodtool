@@ -1,6 +1,6 @@
 Name:           kmodtool
 Version:        1
-Release:        28%{?dist}
+Release:        29%{?dist}
 Summary:        Tool for building kmod packages
 License:        MIT
 URL:            http://rpmfusion.org/Packaging/KernelModules/Kmods2
@@ -38,6 +38,16 @@ sed -i 's|^default_prefix=.*|default_prefix=%{_datadir}/%{name}/|'  \
 
 
 %changelog
+* Mon Mar 26 2018 Nicolas Chauvet <kwizart@gmail.com> - 1-29
+- Update copyrights
+- Drop Group field
+- Patches from Nicolas Vieville - Enhancements for RHEL kernel:
+- remove unneeded uname-r sub-package for RHEL
+- enforce a range dependency for kernels
+- register modules with /usr/sbin/weak-modules
+- use depmod as seen in example file /usr/lib/rpm/redhat/kmodtool
+- Add -e to depmod.
+
 * Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1-28
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
