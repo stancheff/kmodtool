@@ -9,6 +9,7 @@ Source1:        %{name}-kmodtool
 Source2:        %{name}-kernel-variants
 BuildArch:      noarch
 
+
 %description
 This package contains tools and list of recent kernels that get used when
 building kmod-packages.
@@ -23,9 +24,10 @@ building kmod-packages.
 
 
 %install
-mkdir -p $RPM_BUILD_ROOT/%{_bindir} $RPM_BUILD_ROOT/%{_datadir}/%{name}/
-install -p -m 0755 %{SOURCE1}  $RPM_BUILD_ROOT/%{_bindir}/kmodtool
-install -p -m 0644 %{SOURCE2} $RPM_BUILD_ROOT/%{_datadir}/%{name}/kernel-variants
+mkdir -p -m 0755 %{buildroot}%{_bindir}
+mkdir -p -m 0755 %{buildroot}%{_datadir}/%{name}
+install -p -m 0755 %{SOURCE1} %{buildroot}%{_bindir}/kmodtool
+install -p -m 0644 %{SOURCE2} %{buildroot}%{_datadir}/%{name}/kernel-variants
 
 # adjust default-path
 sed -i 's|^default_prefix=.*|default_prefix=%{_datadir}/%{name}/|'  \
