@@ -143,18 +143,9 @@ print_rpmtemplate_per_kmodpkg ()
 	## Build some interesting strings with kernel uname -r
 	## Examples:
 	## kernel_uname_r                3.10.0-693.2.2.el7.x86_64
-	## kernel_uname_r_wo_arch        3.10.0-693.2.2.el7
 	## kernel_uname_r_short          3.10.0-693.el7
-	## kernel_uname_r_rel            693
-	## kernel_uname_r_rel_plus_one   694
-	## kernel_uname_r_short_plus_one 3.10.0-694.el7
 	local kernel_uname_r=${1}
-	local kernel_uname_r_wo_arch=$(echo ${1} | sed -e "s/\.${target}//")
-	local kernel_uname_r_short=$(echo ${1} | sed -e "s/\.${target}//" -e "s/\(.*-\)\([[:alnum:]]*\)\(\..*\)\(\.el.*\)/\1\2\4/")
-	local kernel_uname_r_rel=$(echo ${1} | sed -e "s/.*-//" -e "s/\..*//")
-	local kernel_uname_r_rel_plus_one=$(( kernel_uname_r_rel+1 ))
-	local kernel_uname_r_short_plus_one=$(echo ${kernel_uname_r_short} | sed -e "s/(//" -e "s/-${kernel_uname_r_rel}\./-${kernel_uname_r_rel_plus_one}\./")
-	local kernel_variant="${2:+-${2}}"
+	local kernel_uname_r_short=$(echo ${1} | sed -e "s/\.${target}//" -e "s/\(.*\)-\([[:alnum:]]\+\)\(\.[[:alnum:]\.]\+\|\)\(\.el.*\|\.fc.*\)/\1-\2\4/")
 
 	if [[ -h /sbin ]] ; then
 		echo '%global  _prefix_usr      '/usr
@@ -192,6 +183,21 @@ EOF
 
 	# second part
 	if [[ ! "${customkernel}" ]] ; then
+		## Build some interesting strings with kernel uname -r
+		## Examples:
+		## kernel_uname_r_wo_arch        3.10.0-693.2.2.el7
+		## kernel_uname_r_dist           el7
+		## kernel_uname_r_rel            693
+		## kernel_uname_r_rel_plus_one   694
+		## kernel_uname_r_short_plus_one 3.10.0-694.el7
+		## kernel_uname_r_rel_minor      2.2
+		local kernel_uname_r_wo_arch=$(echo ${1} | sed -e "s/\.${target}//")
+		local kernel_uname_r_dist=$(echo ${1} | sed -e "s/\.${target}//" -e "s/\(.*\)-\([[:alnum:]]\+\)\(\.[[:alnum:]\.]\+\|\)\(\.el.*\|\.fc.*\)/\4/" -e "s/^\.//")
+		local kernel_uname_r_rel=$(echo ${1} | sed -e "s/\.${target}//" -e "s/\(.*\)-\([[:alnum:]]\+\)\(\.[[:alnum:]\.]\+\|\)\(\.el.*\|\.fc.*\)/\2/" -e "s/^\.//")
+		local kernel_uname_r_rel_plus_one=$(( kernel_uname_r_rel+1 ))
+		local kernel_uname_r_short_plus_one=$(echo ${kernel_uname_r_short} | sed -e "s/(//" -e "s/-${kernel_uname_r_rel}\./-${kernel_uname_r_rel_plus_one}\./")
+		local kernel_uname_r_rel_minor=$(echo ${1} | sed -e "s/\.${target}//" -e "s/\(.*\)-\([[:alnum:]]\+\)\(\.[[:alnum:]\.]\+\|\)\(\.el.*\|\.fc.*\)/\3/" -e "s/^\.//")
+
 		cat <<EOF
 
 %if 0%{?rhel}
