@@ -133,11 +133,11 @@ sed -i 's|^default_prefix=.*|default_prefix=%{_datadir}/%{name}/|'  \
 - integrate akmodstool into kmodtool
 
 * Mon Dec 17 2007 Thorsten Leemhuis <fedora[AT]leemhuis[DOT]info> - 1-5
-- update kmodtool, so the kmod-foo-<uname -r> package does not require the 
+- update kmodtool, so the kmod-foo-<uname -r> package does not require the
   kmod-foo package when building for kernels that were passed with for-kernels
 
 * Tue Dec 04 2007 Thorsten Leemhuis <fedora[AT]leemhuis[DOT]info> - 1-4
-- update kmodtool, so the kmod-foo metapackage requires the proper version 
+- update kmodtool, so the kmod-foo metapackage requires the proper version
   of the kmod-foo-<uname -r> package
 
 * Tue Dec 04 2007 Thorsten Leemhuis <fedora[AT]leemhuis[DOT]info> - 1-3
@@ -195,7 +195,7 @@ sed -i 's|^default_prefix=.*|default_prefix=%{_datadir}/%{name}/|'  \
 
 * Wed Oct 03 2007 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 5-1
 - disable --all-but-latest stuff -- does not work as expected
-- rename up2date list of kernels from "latest" to "current" as latest 
+- rename up2date list of kernels from "latest" to "current" as latest
   and newest are to similar in wording; asjust script as well
 - kmodtool: don't provide kernel-modules, not needed anymore with
   the new stayle and hurts
@@ -209,12 +209,12 @@ sed -i 's|^default_prefix=.*|default_prefix=%{_datadir}/%{name}/|'  \
 - s/latests/latest/
 - update kernel lists for rawhide and test2 kernels
 - make kmod-helpers-livna-list-kernels print BuildRequires for all kernels
-  as well; this is not needed and will slow build a bit as it will track 
+  as well; this is not needed and will slow build a bit as it will track
   all the kernel-devel packages in, but that way we make sure they are really
   available in the buildsys
 
 * Fri Sep 07 2007 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 3-4
-- implement proper arch deps 
+- implement proper arch deps
 
 * Fri Sep 07 2007 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 3-3
 - proper list of todays rawhide-kernels
