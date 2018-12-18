@@ -1,6 +1,6 @@
 Name:           kmodtool
 Version:        1
-Release:        32%{?dist}
+Release:        33%{?dist}
 Summary:        Tool for building kmod packages
 License:        MIT
 URL:            http://rpmfusion.org/Packaging/KernelModules/Kmods2
@@ -40,6 +40,9 @@ sed -i 's|^default_prefix=.*|default_prefix=%{_datadir}/%{name}/|'  \
 
 
 %changelog
+* Thu Feb 28 2019 Alexander Larsson <alexl@redhat.com> - 1-33
+- Call akmods-ostree-post to support ostree/silverblue builds - rhbz#1667014
+
 * Fri Feb 01 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1-32
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 

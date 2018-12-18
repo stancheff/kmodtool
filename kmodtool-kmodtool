@@ -67,6 +67,7 @@ print_akmodtemplate ()
 %global akmod_install mkdir -p \$RPM_BUILD_ROOT/%{_usrsrc}/akmods/; \\\
 rpmbuild --define "_sourcedir %{_sourcedir}" \\\
 --define "_srcrpmdir \$RPM_BUILD_ROOT/%{_usrsrc}/akmods/" \\\
+%{?dist:--define 'dist %{dist}}' \\\
 -bs --nodeps %{_specdir}/%{name}.spec ; \\\
 ln -s \$(ls \$RPM_BUILD_ROOT/%{_usrsrc}/akmods/) \$RPM_BUILD_ROOT/%{_usrsrc}/akmods/${kmodname}-kmod.latest
 
@@ -92,6 +93,9 @@ This package provides the akmod package for the ${kmodname} kernel modules.
 
 %posttrans     -n akmod-${kmodname}
 nohup /usr/sbin/akmods --from-akmod-posttrans --akmod ${kmodname} &> /dev/null &
+
+%post     -n akmod-${kmodname}
+[ -x /usr/sbin/akmods-ostree-post ] && /usr/sbin/akmods-ostree-post ${kmodname} %{_usrsrc}/akmods/${kmodname}-kmod-%{version}-%{release}.src.rpm
 
 %files         -n akmod-${kmodname}
 %defattr(-,root,root,-)
