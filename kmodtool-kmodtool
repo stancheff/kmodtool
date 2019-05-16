@@ -203,6 +203,14 @@ EOF
 		local kernel_uname_r_rel_minor=$(echo ${1} | sed -e "s/\.${target}//" -e "s/\(.*\)-\([[:alnum:]]\+\)\(\.[[:alnum:]\.]\+\|\)\(\.el.*\|\.fc.*\)/\3/" -e "s/^\.//")
 
 		cat <<EOF
+%global _kmodtool_depmod_post \\\
+if [ -f /boot/System.map-${kernel_uname_r} ] ; then \\\
+  %{?_prefix_usr}/sbin/depmod -aeF /boot/System.map-${kernel_uname_r} ${kernel_uname_r} >/dev/null ; \\\
+elif [ -f /lib/modules/${kernel_uname_r}/System.map ] ; then \\\
+  %{?_prefix_usr}/sbin/depmod -aeF /lib/modules/${kernel_uname_r}/System.map ${kernel_uname_r} >/dev/null ; \\\
+else \\\
+  %{?_prefix_usr}/sbin/depmod -a >/dev/null ; \\\
+fi || :
 
 %if 0%{?rhel}
 Requires:         kernel >= ${kernel_uname_r_short}
@@ -210,7 +218,7 @@ Requires:         kernel < ${kernel_uname_r_short_plus_one}
 BuildRequires:    kernel-devel = ${kernel_uname_r_wo_arch} redhat-rpm-config kernel-abi-whitelists
 
 %post          -n kmod-${kmodname}
-%{?_prefix_usr}/sbin/depmod -aeF /boot/System.map-${kernel_uname_r} ${kernel_uname_r} > /dev/null || :
+%{_kmodtool_depmod_post}
 
 modules=( \$(find ${usr_lib_modules}/${kernel_uname_r}/extra/${kmodname}/ | grep -e '\.ko$') )
 printf '%s\n' "\${modules[@]}" | %{?_prefix_usr}/sbin/weak-modules --add-modules
@@ -219,7 +227,7 @@ printf '%s\n' "\${modules[@]}" | %{?_prefix_usr}/sbin/weak-modules --add-modules
 rpm -ql kmod-${kmodname}-%{version}-%{release}.$(arch) | grep -e '\.ko$' > /var/run/rpm-kmod-${kmodname}-modules
 
 %postun        -n kmod-${kmodname}
-%{?_prefix_usr}/sbin/depmod -aeF /boot/System.map-${kernel_uname_r} ${kernel_uname_r} &> /dev/null || :
+%{_kmodtool_depmod_post}
 
 modules=( \$(cat /var/run/rpm-kmod-${kmodname}-modules) )
 rm /var/run/rpm-kmod-${kmodname}-modules
@@ -229,9 +237,9 @@ Requires:         kernel-uname-r = ${kernel_uname_r}
 BuildRequires:    kernel-devel-uname-r = ${kernel_uname_r}
 BuildRequires:    gcc
 %post          -n kmod-${kmodname}-${kernel_uname_r}
-%{?_prefix_usr}/sbin/depmod -aeF /boot/System.map-${kernel_uname_r} ${kernel_uname_r} > /dev/null || :
+%{_kmodtool_depmod_post}
 %postun        -n kmod-${kmodname}-${kernel_uname_r}
-%{?_prefix_usr}/sbin/depmod -aeF /boot/System.map-${kernel_uname_r} ${kernel_uname_r} &> /dev/null || :
+%{_kmodtool_depmod_post}
 %endif
 EOF
 	else
